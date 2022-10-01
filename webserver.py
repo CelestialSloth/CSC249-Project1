@@ -1,3 +1,5 @@
+import io
+import tempfile
 from socket import *
 import sys # In order to terminate the program
 
@@ -10,7 +12,8 @@ serverSocket = socket(AF_INET, SOCK_STREAM)
   # TODO: Assign a port number
   #       Bind the socket to server address and server port
   #       Tell the socket to listen to at most 1 connection at a time
-
+serverSocket.bind(("0.0.0.0", 0))
+serverSocket.listen(1)
 # -----------
 # Fill in end
 # -----------
@@ -23,7 +26,7 @@ while True:
     # -------------
     # Fill in start
     # -------------
-    connectionSocket, addr = None # TODO: Set up a new connection from the client
+    connectionSocket, addr = serverSocket.accept() # TODO: Set up a new connection from the client
     # -----------
     # Fill in end
     # -----------
@@ -33,7 +36,9 @@ while True:
         # -------------
         # Fill in start
         # -------------
-        message = None # TODO: Receive the request message from the client
+        message = connectionSocket.recv(1024) # TODO: Receive the request message from the client
+        print("message: ")
+        print(message)
         # -----------
         # Fill in end
         # -----------
@@ -49,7 +54,8 @@ while True:
         # -------------
         # Fill in start
         # -------------
-        outputdata = None # TODO: Store the entire contents of the requested file in a temporary buffer
+
+        outputdata = f.read()  # TODO: Store the entire contents of the requested file in a temporary buffer
         # -----------
         # Fill in end
         # -----------
@@ -57,7 +63,11 @@ while True:
         # -------------
         # Fill in start
         # -------------
-            # TODO: Send one HTTP header line into socket
+
+        # TODO: Send one HTTP header line into socket
+        # Code found in this stack overflow post: https://stackoverflow.com/questions/8315209/sending-http-headers-with-python
+        connectionSocket.send('HTTP/1.0 200 OK\r\n')
+        connectionSocket.send("Content-Type: text/html\r\n\r\n")
         # -----------
         # Fill in end
         # -----------
@@ -73,8 +83,15 @@ while True:
         # -------------
         # Fill in start
         # -------------
-            # TODO: Send response message for file not found
-            #       Close client socket
+
+        # TODO: Send response message for file not found
+        # Code found in this Stack Overflow post: https://stackoverflow.com/questions/41852380/how-to-abort-a-python-script-and-return-a-404-error
+        connectionSocket.send('HTTP/1.1 404 Not Found\r\n')
+        connectionSocket.send('Content-Type: text/html\r\n\r\n')
+        connectionSocket.send('<html><head></head><body><h1>404 Not Found</h1></body></html>')
+
+        # Close client socket
+        connectionSocket.close()
         # -----------
         # Fill in end
         # -----------
