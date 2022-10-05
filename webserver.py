@@ -1,3 +1,4 @@
+#I worked on phase 1 of this project with Ramsha
 import io
 import tempfile
 from socket import *
@@ -93,10 +94,16 @@ while True:
         # -------------
 
         # TODO: Send response message for file not found
-        # Code found in this Stack Overflow post: https://stackoverflow.com/questions/41852380/how-to-abort-a-python-script-and-return-a-404-error
+        # The following two lines were found in this Stack Overflow post: https://stackoverflow.com/questions/41852380/how-to-abort-a-python-script-and-return-a-404-error
         connectionSocket.send('HTTP/1.1 404 Not Found\r\n'.encode())
         connectionSocket.send('Content-Type: text/html\r\n\r\n'.encode())
-        connectionSocket.send('<html><head></head><body><h1>404 Not Found</h1></body></html>'.encode())
+
+        #encode and send the 404 error html file instead
+        f = open("404Error.html")
+        outputdata = f.read()
+        for i in range(0, len(outputdata)):
+            connectionSocket.send(outputdata[i].encode())
+        connectionSocket.send("\r\n".encode())
 
         # Close client socket
         connectionSocket.close()
