@@ -1,4 +1,4 @@
-#I worked on phase 1 of this project with Ramsha
+#I worked on phase 1-2 of this project with Ramsha
 import io
 import tempfile
 from socket import *
@@ -14,7 +14,7 @@ print_lock = threading.Lock()
 def threaded(connectionSocket):
     while True:
         try:
-            message = connectionSocket.recv(1024) # TODO: Receive the request message from the client
+            message = connectionSocket.recv(1024) # Receive the request message from the client
             if not message:
                 print_lock.release()
                 break
@@ -33,14 +33,14 @@ def threaded(connectionSocket):
             # a character '\', we read the path from the second character
             f = open(filename[1:])
 
-            outputdata = f.read()  # TODO: Store the entire contents of the requested file in a temporary buffer
+            outputdata = f.read()  # Store the entire contents of the requested file in a temporary buffer
             f.close()
 
-            # TODO: Send one HTTP header line into socket
+            # Send one HTTP header line into socket
             # Code found in this stack overflow post: https://stackoverflow.com/questions/8315209/sending-http-headers-with-python
             # TA explained that I needed to add .encode()
             connectionSocket.send('HTTP/1.0 200 OK\r\n'.encode())
-            connectionSocket.send("Content-Type: text/html\r\n\r\n".encode())
+            #connectionSocket.send("Content-Type: text/html\r\n\r\n".encode())
 
             # Send the content of the requested file to the client
             for i in range(0, len(outputdata)):
@@ -51,10 +51,10 @@ def threaded(connectionSocket):
 
         except IOError:
 
-            # TODO: Send response message for file not found
+            # Send response message for file not found
             # The following two lines were found in this Stack Overflow post: https://stackoverflow.com/questions/41852380/how-to-abort-a-python-script-and-return-a-404-error
             connectionSocket.send('HTTP/1.1 404 Not Found\r\n'.encode())
-            connectionSocket.send('Content-Type: text/html\r\n\r\n'.encode())
+            #connectionSocket.send('Content-Type: text/html\r\n\r\n'.encode())
 
             #encode and send the 404 error html file instead
             f = open("404Error.html")
@@ -68,18 +68,18 @@ def threaded(connectionSocket):
             connectionSocket.close()
 
         except Exception:
-            print("something went wrong")
+            print("something else went wrong")
 
-    connectionSocket.close()
+    #connectionSocket.close()
 
 
 def Main():
     serverSocket = socket(AF_INET, SOCK_STREAM)
     # http://127.0.0.1:8080/HelloWorld.html
 
-      # TODO: Assign a port number
-      #       Bind the socket to server address and server port
-      #       Tell the socket to listen to at most 1 connection at a time
+      # Assign a port number
+      # Bind the socket to server address and server port
+      # Tell the socket to listen to at most 1 connection at a time
     PORT = 8080 #we were told that 8080 was a standard port
     SERVER = gethostbyname(gethostname())  #Diana showed us this code
 
@@ -91,7 +91,7 @@ def Main():
         # Establish the connection
         print('Ready to serve...')
 
-        connectionSocket, addr = serverSocket.accept() # TODO: Set up a new connection from the client
+        connectionSocket, addr = serverSocket.accept() # Set up a new connection from the client
 
 
 
@@ -102,5 +102,7 @@ def Main():
     serverSocket.close()
     sys.exit()  #Terminate the program after sending the corresponding data
 
+
 if __name__ == '__main__':
     Main()
+
