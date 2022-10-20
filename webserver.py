@@ -2,77 +2,81 @@
 import io
 import tempfile
 from socket import *
-from _thread import *
-import threading
+import concurrent.futures
 import sys  # In order to terminate the program
 
-# from https://www.geeksforgeeks.org/socket-programming-multi-threading-python/
-print_lock = threading.Lock()
+# https://docs.python.org/3/library/concurrent.futures.html
+executor = concurrent.futures.ThreadPoolExecutor()
 
 
-# Method adapted from https://www.geeksforgeeks.org/socket-programming-multi-threading-python/
-# Primarily copy/paste from code in phase 1 of this assignment
-def threaded(connectionSocket):
-    while True:
-        try:
-            message = connectionSocket.recv(1024)  # Receive the request message from the client
-            if not message:
-                print_lock.release()
-                break
+def thread(connectionSocket):
 
-            # Extract the path of the requested object from the message
-            # The path is the second part of HTTP header, identified by [1]
-            # The program would occasionally throw an error here when a machine tried to access
-            # something that didn't exist, ie "HelloWorl.html". The current program only catches
-            # IOErrors, so I set it to throw one when there's an IndexError.
-            try:
-                filename = message.split()[1]
-            except IndexError:
-                raise IOError
+    try:
+        message = connectionSocket.recv(1024)  # Receive the request message from the client
+        print("received message")
 
-            # Because the extracted path of the HTTP request includes
-            # a character '\', we read the path from the second character
-            f = open(filename[1:])
+        # Extract the path of the requested object from the message
+        # The path is the second part of HTTP header, identified by [1]
+        # The program would occasionally throw an error here when a machine tried to access
+        # something that didn't exist, ie "HelloWorl.html". The current program only catches
+        # IOErrors, so I set it to throw one when there's an IndexError.
+        filename = message.split()[1]
+        print("filename: ")
+        print(filename)
 
-            outputdata = f.read()  # Store the entire contents of the requested file in a temporary buffer
-            f.close()
+        # Because the extracted path of the HTTP request includes
+        # a character '\', we read the path from the second character
+        f = open(filename[1:])
+        print("opened file")
 
-            # Send one HTTP header line into socket
-            # Code found in this stack overflow post: https://stackoverflow.com/questions/8315209/sending-http-headers-with-python
-            # TA explained that I needed to add .encode()
-            connectionSocket.send('HTTP/1.0 200 OK\r\n'.encode())
-            connectionSocket.send("Content-Type: text/html\r\n\r\n".encode())
+        outputdata = f.read()  # Store the entire contents of the requested file in a temporary buffer
+        print("read the file")
+        f.close()
+        print("closed the file")
 
-            # Send the content of the requested file to the client
-            for i in range(0, len(outputdata)):
-                connectionSocket.send(outputdata[i].encode())
-            connectionSocket.send("\r\n".encode())
+        # Send one HTTP header line into socket
+        # Code found in this stack overflow post: https://stackoverflow.com/questions/8315209/sending-http-headers-with-python
+        # TA explained that I needed to add .encode()
+        connectionSocket.send('HTTP/1.0 200 OK\r\n'.encode())
+        connectionSocket.send("Content-Type: text/html\r\n\r\n".encode())
+        print("Sent the header")
 
-            connectionSocket.close()
+        # Send the content of the requested file to the client
+        for i in range(0, len(outputdata)):
+            connectionSocket.send(outputdata[i].encode())
+        connectionSocket.send("\r\n".encode())
+        print("Sent the data")
+        connectionSocket.close()
+        print("closed connectionSocket")
 
-        except IOError:
+    except (IOError, IndexError):
+        print("There was an IOError or an IndexError")
 
-            # Send response message for file not found
-            # The following two lines were found in this Stack Overflow post: https://stackoverflow.com/questions/41852380/how-to-abort-a-python-script-and-return-a-404-error
-            connectionSocket.send('HTTP/1.1 404 Not Found\r\n'.encode())
-            connectionSocket.send('Content-Type: text/html\r\n\r\n'.encode())
+        # Send response message for file not found
+        # The following two lines were found in this Stack Overflow post: https://stackoverflow.com/questions/41852380/how-to-abort-a-python-script-and-return-a-404-error
+        connectionSocket.send('HTTP/1.1 404 Not Found\r\n'.encode())
+        connectionSocket.send('Content-Type: text/html\r\n\r\n'.encode())
+        print("Sent the header")
 
-            # encode and send the 404 error html file instead
-            f = open("404Error.html")
-            outputdata = f.read()
-            f.close()
-            for i in range(0, len(outputdata)):
-                connectionSocket.send(outputdata[i].encode())
-            connectionSocket.send("\r\n".encode())
+        # encode and send the 404 error html file instead
+        f = open("404Error.html")
+        print("Opened the file")
+        outputdata = f.read()
+        print("Read the data")
+        f.close()
+        print("Closed the file")
 
-            # Close client socket
-            connectionSocket.close()
+        for i in range(0, len(outputdata)):
+            connectionSocket.send(outputdata[i].encode())
+        connectionSocket.send("\r\n".encode())
+        print("Sent the data")
 
-        except Exception:
-            print("something else went wrong")
+        # Close client socket
+        connectionSocket.close()
+        print("Closed connectionSocket")
 
-    #connectionSocket.close()
-
+    except Exception:
+        print("something else went wrong")
 
 def Main():
     serverSocket = socket(AF_INET, SOCK_STREAM)
@@ -87,20 +91,22 @@ def Main():
     serverSocket.bind((SERVER, PORT))
     serverSocket.listen(5)
 
+
     while True:
-
         # Establish the connection
-        print('Ready to serve...')
+        print('\nReady to serve...')
+        connectionSocket, addr = serverSocket.accept()  # Set up a new connection from the client
+        print("Accepted connection")
 
-        connectionSocket, addr = serverSocket.accept() # Set up a new connection from the client
+        #https://docs.python.org/3/library/concurrent.futures.html
+        f = executor.submit(thread, connectionSocket)
+        print("submitted thread")
 
-
-
-        # code from https://www.geeksforgeeks.org/socket-programming-multi-threading-python/
-        print_lock.acquire()
-        start_new_thread(threaded, (connectionSocket,))
-
+    print("exited while True")
+    executor.shutdown(wait=True)
+    print("closed executor")
     serverSocket.close()
+    print("Closed serverSocket")
     sys.exit()  # Terminate the program after sending the corresponding data
 
 
