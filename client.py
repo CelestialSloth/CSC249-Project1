@@ -16,7 +16,7 @@ if __name__=='__main__':
     arguments = sys.argv
     if(len(arguments) < 4):
         server_host = '127.0.0.1'
-        server_port = '8080'
+        server_port = '1234'
         filename = 'HelloWorld.html'
 
     else:
