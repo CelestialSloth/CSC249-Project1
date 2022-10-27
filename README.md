@@ -30,6 +30,8 @@ I also assumed that the user trying to access the wrong port was not
 something that we needed to handle for this assignment.
 
 ## References
+I worked on phases 1-2 of this project with Ramsha Rauf.
+
 Minh Phuong Phan helped me a lot with the first two phases,
 particularly phase 2, which involved threading. For phase 2,
 I also found the [`concurrent.futures` documentation](https://docs.python.org/3/library/concurrent.futures.html)
