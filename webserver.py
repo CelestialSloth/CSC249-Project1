@@ -71,9 +71,9 @@ def Main():
     # Assign a port number
     # Bind the socket to server address and server port
     # Tell the socket to listen to at most 1 connection at a time
-    PORT = 1234  # we were told that 8080 was a standard port
-    SERVER = gethostbyname(gethostname())  # Diana showed us this code
-
+    PORT = 8081  # we were told that 8080 was a standard port
+    SERVER = '0.0.0.0'  # Diana showed us this code
+    print()
     serverSocket.bind((SERVER, PORT))
     serverSocket.listen(5)
 
