@@ -71,20 +71,38 @@ def Main():
     # Assign a port number
     # Bind the socket to server address and server port
     # Tell the socket to listen to at most 1 connection at a time
-    PORT = 8081  # we were told that 8080 was a standard port
+    PORT = 8080  # we were told that 8080 was a standard port
     SERVER = '0.0.0.0'  # Diana showed us this code
     print()
     serverSocket.bind((SERVER, PORT))
     serverSocket.listen(5)
 
+    ip_addresses = {}
+
     while True:
         # Establish the connection
         print('\nReady to serve...')
         connectionSocket, addr = serverSocket.accept()  # Set up a new connection from the client
+        ip_addr = addr[0]
+        print("Accepting connection from " + str(ip_addr))
 
         # The documentation for the concurrent.futures library.
         # https://docs.python.org/3/library/concurrent.futures.html
-        f = executor.submit(thread, connectionSocket)
+
+        num_times_accessed = ip_addresses.get(ip_addr)
+        print("     num_times_accessed: " + str(num_times_accessed))
+        if num_times_accessed is not None and num_times_accessed >= 5:
+            ip_addresses[ip_addr] = num_times_accessed + 1
+            # Close client socket
+            connectionSocket.close()
+            print("   Closed socket. Not sending data back")
+        elif num_times_accessed is not None:
+            ip_addresses[ip_addr] = num_times_accessed + 1
+            f = executor.submit(thread, connectionSocket)
+        else:
+            print("   has not accessed before")
+            ip_addresses.setdefault(ip_addr, 1)
+            f = executor.submit(thread, connectionSocket)
 
     executor.shutdown(wait=True)
     serverSocket.close()
