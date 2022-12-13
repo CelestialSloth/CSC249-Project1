@@ -84,3 +84,14 @@ developer.okta.com linked above, explain that an effective way to deal
 with DoS attacks is to use mitigation centers/services for filtering traffic, so that way your server
 isn't responsible for checking every request. Thus, if my server was actually housing
 an important website, I might choose to pay for one of those services.
+
+## References
+I received help from Phuong during TA hours. Additionally, I used the following
+websites to find code for my attacks:
+* https://www.neuralnine.com/code-a-ddos-script-in-python/
+* https://www.thepythoncode.com/article/syn-flooding-attack-using-scapy-in-python
+* https://systemweakness.com/ping-and-syn-flood-attacks-with-python-and-scapy-6e4515435492
+
+I found general information about attack/defense methods from these sources:
+* https://developer.okta.com/books/api-security/dos/how/#rate-limiting
+* (Recommended reading) https://www.cloudflare.com/learning/ddos/what-is-a-ddos-attack/
